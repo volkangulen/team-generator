@@ -1,12 +1,14 @@
 import * as React from "react";
 //@ts-ignore
 import { Match } from "regexp";
+
 import { Player } from "@/types/player";
 import { Team } from "@/types/team";
 import generateTeams from "@/utils/team.selector";
-
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
+import { uuid } from "uuidv4";
+
 export default function IndexPage() {
   const [input, setInput] = React.useState("");
   const [tableData, setTableData] = React.useState([] as Player[]);
@@ -182,7 +184,7 @@ export default function IndexPage() {
             <TabList>
               {teamData?.map((team, index) => {
                 return (
-                  <Tab>
+                  <Tab key={uuid()}>
                     Team {index + 1} ({team.rating})
                   </Tab>
                 );
@@ -191,7 +193,7 @@ export default function IndexPage() {
 
             {teamData?.map((team) => {
               return (
-                <TabPanel>
+                <TabPanel key={uuid()}>
                   <Tab>
                     <div className="w-full">
                       <div className=" relative overflow-x-auto mt-4">

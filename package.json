@@ -23,6 +23,7 @@
     "react-tabs": "^6.0.0",
     "regexp": "^1.0.0",
     "typescript": "4.9.4",
+    "uuidv4": "^6.2.13",
     "zod": "^3.20.2"
   },
   "devDependencies": {
