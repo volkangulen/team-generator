@@ -16,8 +16,11 @@ function calculateTotalRating(list: Player[]) {
   return list.map((p) => p.rating).reduce((r1, r2) => r1 + r2, 0);
 }
 
-function calculateLowPriorityCount(list: Player[]) {
-  return list.map((p) => Number(p.lowPririty)).reduce((r1, r2) => r1 + r2, 0);
+function calculateCount(list: Player[], prop: string) {
+  type ObjectKey = keyof Player;
+
+  const myVar = prop as ObjectKey;
+  return list.map((p) => Number(p[myVar])).reduce((r1, r2) => r1 + r2, 0);
 }
 
 function generateTeams(list: Player[]) {
@@ -46,10 +49,14 @@ function* filterTeams(
   priorities: Player[],
   limit: number
 ): IterableIterator<Team> {
+  const priorityRating = calculateTotalRating(priorities);
+  const priorityGoalKeeperCount = calculateCount(priorities, "goalKeeper");
   for (const team of teams) {
-    const teamRating = calculateTotalRating([...team, ...priorities]);
-    const lowPriorityCount = calculateLowPriorityCount(team);
-    if (teamRating <= limit && teamRating >= limit - 2) {
+    const teamRating = calculateTotalRating(team) + priorityRating;
+    const lowPriorityCount = calculateCount(team, "lowPriority");
+    const goalKeeperCount =
+      calculateCount(team, "goalKeeper") + priorityGoalKeeperCount;
+    if (teamRating <= limit && teamRating >= limit - 2 && goalKeeperCount < 2) {
       yield {
         players: [...team, ...priorities],
         rating: teamRating,

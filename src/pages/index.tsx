@@ -7,7 +7,7 @@ import { Team } from "@/types/team";
 import generateTeams from "@/utils/team.selector";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
-import { uuid } from "uuidv4";
+import { v4 } from "uuid";
 
 export default function IndexPage() {
   const [input, setInput] = React.useState("");
@@ -23,48 +23,54 @@ export default function IndexPage() {
     // Use a regular expression to find players in the input string
     const regex = /(?<name>.+)\((?<rating>\d{2})(?<gk>, kaleci){0,1}\)/gm;
 
-    // Alternative syntax using RegExp constructor
-    // const regex = new RegExp('(?P<name>.+)\\((?P<rating>\\d{2})(?P<gk>, kaleci){0,1}\\)', 'gm')
-
-    const str = `volkan gulen (13)
-`;
-    let m;
-
-    while ((m = regex.exec(str)) !== null) {
-      // This is necessary to avoid infinite loops with zero-width matches
-      if (m.index === regex.lastIndex) {
-        regex.lastIndex++;
-      }
-
-      // The result can be accessed through the `m`-variable.
-      m.forEach((match, groupIndex) => {
-        console.log(`Found match, group ${groupIndex}: ${match}`);
-      });
-    }
     let match: Match;
     while ((match = regex.exec(input))) {
       const name = match.groups.name;
       const rating = parseInt(match.groups.rating, 10);
       const goalKeeper = !!match.groups.gk;
-      players.push({ name, rating, goalKeeper });
+      players.push({
+        name,
+        rating,
+        goalKeeper,
+        highPriority: false,
+        lowPriority: false,
+      });
     }
 
     return players;
   };
 
   const toggleLowPriority = (player: Player) => {
+    if (player.goalKeeper) {
+      if (
+        tableData
+          .filter((p) => p.name != player.name)
+          .some((p) => p.goalKeeper && (p.highPriority || p.lowPriority))
+      ) {
+        return;
+      }
+    }
     if (player.highPriority) {
       player.highPriority = false;
-      player.lowPririty = true;
+      player.lowPriority = true;
     } else {
-      player.lowPririty = !player.lowPririty;
+      player.lowPriority = !player.lowPriority;
     }
     const remaining = tableData.filter((p) => p.name != player.name);
     setTableData([player, ...remaining]);
   };
   const toggleHighPriority = (player: Player) => {
-    if (player.lowPririty) {
-      player.lowPririty = false;
+    if (player.goalKeeper) {
+      if (
+        tableData
+          .filter((p) => p.name != player.name)
+          .some((p) => p.goalKeeper && (p.highPriority || p.lowPriority))
+      ) {
+        return;
+      }
+    }
+    if (player.lowPriority) {
+      player.lowPriority = false;
       player.highPriority = true;
     } else {
       player.highPriority = !player.highPriority;
@@ -81,7 +87,6 @@ export default function IndexPage() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const parsedData = parse(input);
-    console.log(parsedData);
     setTableData(parsedData);
   };
   return (
@@ -129,7 +134,12 @@ export default function IndexPage() {
                 </thead>
                 <tbody>
                   {tableData
-                    .sort((p1, p2) => p2.rating - p1.rating)
+                    .sort((p1, p2) => {
+                      if (p2.rating !== p1.rating) {
+                        return p2.rating - p1.rating;
+                      }
+                      return p1.name.localeCompare(p2.name);
+                    })
                     .map((player) => (
                       <tr
                         className="bg-gray-800 border-gray-700"
@@ -145,24 +155,20 @@ export default function IndexPage() {
                             checked={player.goalKeeper}
                           />
                         </td>
-                        <td
-                          className="px-6 py-4 hover:cursor-pointer"
-                          onClick={() => toggleHighPriority(player)}
-                        >
+                        <td className="px-6 py-4 hover:cursor-pointer">
                           <input
                             className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                             type="checkbox"
                             checked={player.highPriority}
+                            onChange={() => toggleHighPriority(player)}
                           />
                         </td>
-                        <td
-                          className="px-6 py-4 hover:cursor-pointer"
-                          onClick={() => toggleLowPriority(player)}
-                        >
+                        <td className="px-6 py-4 hover:cursor-pointer">
                           <input
                             className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                             type="checkbox"
-                            checked={player.lowPririty}
+                            checked={player.lowPriority}
+                            onChange={() => toggleLowPriority(player)}
                           />
                         </td>
                       </tr>
@@ -184,7 +190,7 @@ export default function IndexPage() {
             <TabList>
               {teamData?.map((team, index) => {
                 return (
-                  <Tab key={uuid()}>
+                  <Tab key={v4()}>
                     Team {index + 1} ({team.rating})
                   </Tab>
                 );
@@ -193,7 +199,7 @@ export default function IndexPage() {
 
             {teamData?.map((team) => {
               return (
-                <TabPanel key={uuid()}>
+                <TabPanel key={v4()}>
                   <Tab>
                     <div className="w-full">
                       <div className=" relative overflow-x-auto mt-4">
@@ -210,7 +216,12 @@ export default function IndexPage() {
                           </thead>
                           <tbody>
                             {team.players
-                              .sort((p1, p2) => p2.rating - p1.rating)
+                              .sort((p1, p2) => {
+                                if (p2.rating !== p1.rating) {
+                                  return p2.rating - p1.rating;
+                                }
+                                return p1.name.localeCompare(p2.name);
+                              })
                               .map((player) => (
                                 <tr
                                   className="bg-gray-800 border-gray-700"

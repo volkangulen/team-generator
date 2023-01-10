@@ -2,6 +2,6 @@ export interface Player {
   rating: number;
   name: string;
   goalKeeper: boolean;
-  highPriority?: boolean;
-  lowPririty?: boolean;
+  highPriority: boolean;
+  lowPriority: boolean;
 }
