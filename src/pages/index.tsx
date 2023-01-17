@@ -10,6 +10,7 @@ import "react-tabs/style/react-tabs.css";
 import { v4 } from "uuid";
 
 export default function IndexPage() {
+  const KALECI = "kaleci";
   const [input, setInput] = React.useState("");
   const [tableData, setTableData] = React.useState([] as Player[]);
   const [teamData, setTeamData] = React.useState([] as Team[]);
@@ -21,13 +22,19 @@ export default function IndexPage() {
     const players: Player[] = [];
 
     // Use a regular expression to find players in the input string
-    const regex = /(?<name>.+)\((?<rating>\d{2})(?<gk>, kaleci){0,1}\)/gm;
+    const regex =
+      /(?<name>.+)\((?<rating>\d{2})(, (?<addition>[\w,ç,ı,ş,ğ,ö, ]*)){0,1}\)/gm;
 
     let match: Match;
     while ((match = regex.exec(input))) {
-      const name = match.groups.name;
       const rating = parseInt(match.groups.rating, 10);
-      const goalKeeper = !!match.groups.gk;
+
+      const addition = match.groups.addition;
+      const goalKeeper = !!addition && addition === KALECI;
+      const name =
+        !!addition && addition !== KALECI
+          ? match.groups.name + `(${addition})`
+          : match.groups.name;
       players.push({
         name,
         rating,
