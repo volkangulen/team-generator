@@ -56,7 +56,7 @@ function* filterTeams(
     const lowPriorityCount = calculateCount(team, "lowPriority");
     const goalKeeperCount =
       calculateCount(team, "goalKeeper") + priorityGoalKeeperCount;
-    if (teamRating <= limit && teamRating >= limit - 2 && goalKeeperCount < 2) {
+    if (teamRating <= limit && teamRating >= limit - 5 && goalKeeperCount < 2) {
       yield {
         players: [...team, ...priorities],
         rating: teamRating,
