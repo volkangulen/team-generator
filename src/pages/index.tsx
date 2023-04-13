@@ -23,7 +23,7 @@ export default function IndexPage() {
 
     // Use a regular expression to find players in the input string
     const regex =
-      /(?<name>.+)\((?<rating>\d{2})(, (?<addition>[\w,ç,ı,ş,ğ,ö, ]*)){0,1}\)/gm;
+      /(?<name>.+)\((?<rating>\d{2})(, (?<addition>[\w,ç,ı,ş,ğ,ö,ü, ]*)){0,1}\)/gm;
 
     let match: Match;
     while ((match = regex.exec(input))) {
